@@ -1,0 +1,180 @@
+@using Microsoft.AspNetCore.Identity
+@inject Microsoft.AspNetCore.Identity.UserManager<IdentityUser> UserManager
+@using campusakarya.Models
+
+@{
+    var isAdmin = User.IsInRole("Admin");
+    var selectedCategory = (string)ViewData["SelectedCategory"] ?? "all";
+}
+
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="text-center">Etkinlikler</h2>
+        </div>
+    </div>
+
+    <!-- Filter Section (Yaklaşan, Geçmiş, Tüm Etkinlikler) -->
+    <div class="row mb-4">
+        <div class="col text-center">
+            <button class="btn btn-outline-primary mx-2 filter-button" data-filter="upcoming" style="--hover-color: #004085;">Yaklaşan Etkinlikler</button>
+            <button class="btn btn-outline-secondary mx-2 filter-button" data-filter="past">Geçmiş Etkinlikler</button>
+            <button class="btn btn-outline-dark mx-2 filter-button" data-filter="all">Tüm Etkinlikler</button>
+        </div>
+    </div>
+
+    <!-- Search Section (Arama kutucuğu) -->
+    <div class="row mb-4">
+        <div class="col text-center">
+            <div style="display: inline-flex; justify-content: center; align-items: center; width: 100%;">
+                <input type="text" id="searchInput" class="form-control" placeholder="Etkinlik adını yazınız" />
+                <button class="btn btn-primary" id="searchButton" style="background-color: #004085; border-color: #004085;">Ara</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events Section -->
+    <div class="row g-4" id="eventsList">
+        @foreach (var eventItem in Model)
+        {
+            <div class="col-md-4 event-card" 
+                 data-category="@((eventItem.Date >= DateTime.Now) ? "upcoming" : "past")" 
+                 data-type="@eventItem.Category.ToString().ToLower()">
+                <div class="card shadow border-0 position-relative">
+                    @if (!string.IsNullOrEmpty(eventItem.Image))
+                    {
+                        var imagePath = eventItem.Image.StartsWith("~/") ? eventItem.Image.Replace("~", "") : eventItem.Image;
+                        <img src="@Url.Content(imagePath)" alt="@eventItem.EventName Görseli" class="card-img-top event-image">
+                    }
+                    else
+                    {
+                        <img src="@Url.Content("~/img/default.jpg")" alt="Varsayılan Görsel" class="card-img-top event-image">
+                    }
+
+                    <div class="card-body">
+                        <h5 class="card-title">@eventItem.EventName</h5>
+                        <p class="card-text">@eventItem.Date.ToString("dd MMM yyyy") | @eventItem.Location</p>
+                        <span class="badge @(eventItem.Price == "Ücretsiz" ? "bg-success" : "bg-danger")">@eventItem.Price</span>
+                        <a href="@Url.Action("Details", "Events", new { id = eventItem.EventID })" class="stretched-link"></a>
+                    </div>
+
+                    @if (isAdmin)
+                    {
+                        <div class="position-absolute top-0 end-0 mt-2 me-2">
+                            <a href="@Url.Action("EditEvent", new { id = eventItem.EventID })" class="btn btn-sm btn-warning">Düzenle</a>
+                            <form method="post" asp-action="DeleteEvent" asp-route-id="@eventItem.EventID" class="d-inline" onsubmit="return confirm('Bu etkinliği silmek istediğinizden emin misiniz?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (isAdmin)
+    {
+        <div class="text-center mt-4">
+            <a href="@Url.Action("CreateEvent")" class="btn" style="background-color: #004085; color: white; font-size: 16px; padding: 10px 20px;">
+                <i class="bi bi-plus-circle"></i> Ekle
+            </a>
+        </div>
+    }
+</div>
+
+<!-- JavaScript -->
+<script>
+    document.getElementById('searchButton').addEventListener('click', function() {
+        const searchText = document.getElementById('searchInput').value;
+        const url = new URL(window.location);
+        url.searchParams.set('searchTerm', searchText);
+        window.location.href = url.toString();
+    });
+
+    document.querySelectorAll('.filter-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const filter = button.getAttribute('data-filter');
+            filterEvents(filter);
+        });
+    });
+
+    window.onload = function() {
+        const selectedCategory = "@selectedCategory".toLowerCase();
+        filterEvents('all', selectedCategory);
+    };
+
+    function filterEvents(category = 'all', type = 'all') {
+        const eventCards = document.querySelectorAll('.event-card');
+
+        eventCards.forEach(card => {
+            const matchesCategory = category === 'all' || card.getAttribute('data-category') === category;
+            const matchesType = type === 'all' || card.getAttribute('data-type') === type;
+
+            if (matchesCategory && matchesType) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+<style>
+    .event-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+    }
+
+    .stretched-link {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+    }
+
+    .position-absolute {
+        z-index: 10;
+    }
+
+    .event-card:hover {
+        transform: scale(1.05);
+        cursor: pointer;
+    }
+
+    /* Small adjustments for search input and button */
+    #searchInput {
+        width: 70%; /* Arama kutusunun genişliği */
+        display: inline-block;
+        margin-right: 10px;
+        height: 38px; /* Butonla aynı yükseklik */
+        padding: 5px 10px; /* Yatay boşluk */
+        font-size: 16px; /* Font boyutu */
+        vertical-align: middle; /* Dikey hizalama */
+    }
+
+    #searchButton {
+        display: inline-block;
+        height: 38px; /* Arama kutusuyla aynı yükseklik */
+        padding: 0 20px; /* Yatay boşluk */
+        font-size: 16px; /* Aynı font boyutu */
+        vertical-align: middle; /* Dikey hizalama */
+        line-height: 38px; /* Yazıyı dikeyde ortalamak için */
+        text-align: center; /* Yazıyı yatayda ortalamak için */
+        background-color: #004085; /* Buton rengi */
+        border-color: #004085; /* Çerçeve rengi */
+        color: white; /* Yazı rengi */
+    }
+
+    .btn-outline-primary {
+        border-color: #004085;
+        color: #004085;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #004085;
+        color: white;
+    }
+</style>

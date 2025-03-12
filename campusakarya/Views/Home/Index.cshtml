@@ -1,0 +1,103 @@
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Hero Section -->
+<div class="hero-section text-white text-center py-5">
+    <!-- Video Background -->
+    <div class="video-overlay"></div> <!-- Overlay for darkening the video -->
+    <video autoplay muted loop id="videoBackground">
+        <source src="~/img/background.mp4" type="video/mp4">
+        Tarayıcınız video etiketini desteklemiyor.
+    </video>
+    <div class="container position-relative">
+        <h1>CampuSakarya Nedir?</h1>
+        <p class="lead">Sakarya Üniversitesi için kurulmuş gençlik ve etkinlik platformudur.</p>
+        <p>Çevrende sana en uygun aktiviteyi bul ve sosyal yaşamdan uzak kalma!</p>
+    </div>
+</div>
+
+<style>
+    #videoBackground {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1;
+    }
+
+    .hero-section {
+        position: relative;
+        color: white;
+    }
+
+    .hero-section h1, .hero-section p {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Overlay Styling */
+    .video-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6); /* 60% transparency */
+        z-index: 0;
+    }
+
+    .category-box {
+        padding: 20px;
+        text-align: center;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+</style>
+
+<!-- Events Section -->
+<div class="container my-5" id="events">
+    <h2 class="text-center mb-4">Yaklaşan Etkinlikler</h2>
+    <div class="row g-4">
+        @foreach (var eventItem in Model) 
+        {
+            <div class="col-md-4">
+                <a href="@Url.Action("Details", "Events", new { id = eventItem.EventID })" class="card event-card border-0 shadow text-decoration-none">
+                    <div class="card-body">
+                        <h5 class="card-title">@eventItem.EventName</h5>
+                        <p class="card-text">@eventItem.Date.ToString("dd MMM yyyy") | @eventItem.Location</p>
+                        <span class="badge @(eventItem.Price == "Ücretsiz" ? "bg-success" : "bg-danger")">@eventItem.Price</span>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    /* General Box Styling (Same as Event Cards) */
+    .category-box {
+        background-color: #fff; /* Etkinlik kartları gibi beyaz arka plan */
+        border-radius: 8px;
+        padding: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+
+    .category-box:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Ensure alignment with event section */
+    .row.g-4 {
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+</style>

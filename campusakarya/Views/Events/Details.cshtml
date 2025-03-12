@@ -1,0 +1,70 @@
+@model campusakarya.Models.Event
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Etkinlik Detayları Bölümü -->
+<div class="container my-5">
+    <div class="row">
+        <!-- Görsel Bölümü -->
+        <div class="col-md-6">
+            <div class="event-image-container">
+                @if (!string.IsNullOrEmpty(Model.Image))
+                {
+                    var imagePath = Model.Image.StartsWith("~/") ? Model.Image.Replace("~", "") : Model.Image;
+                    <img src="@Url.Content(imagePath)" alt="@Model.EventName Görseli" class="img-fluid rounded shadow event-image">
+                }
+                else
+                {
+                    <img src="@Url.Content("~/img/default.jpg")" alt="Varsayılan Görsel" class="img-fluid rounded shadow event-image">
+                    <p class="text-danger">Görsel bulunamadı. Varsayılan görsel gösteriliyor.</p>
+                }
+            </div>
+        </div>
+        <!-- Detaylar Bölümü -->
+        <div class="col-md-6">
+            <h2 class="mb-4">@Model.EventName</h2>
+            <p><strong>Açıklama:</strong> @Model.Description</p>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Tarih:</strong> @Model.Date.ToString("dd MMM yyyy")</li>
+                <li class="list-group-item"><strong>Mekan:</strong> @Model.Location</li>
+                <li class="list-group-item"><strong>Katılım:</strong> @Model.Price</li>
+                <li class="list-group-item"><strong>Düzenleyen:</strong> @Model.PresentedBy</li>
+            </ul>
+            <div class="text-center mt-4">
+                <button class="btn btn-primary" id="joinEvent">Katıl!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stil Bölümü -->
+<style>
+    .btn-primary {
+        background-color: #004085;
+        border: none;
+        font-size: 1.1rem;
+        padding: 10px 20px;
+    }
+
+    .btn-primary:hover {
+        background-color: #003366;
+    }
+
+    /* Görselin 400x400 alana kaplamasını sağlamak ve kenar boşluklarını ayarlamak */
+    .event-image-container {
+        padding: 20px; /* Görselin etrafındaki boşlukları ayarlamak */
+        background-color: #f8f9fa; /* Arka plan rengi */
+        border-radius: 10px; /* Kenarları yuvarlatmak */
+    }
+
+    .event-image {
+        width: 100%;
+        max-height: 400px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+    }
+</style>
